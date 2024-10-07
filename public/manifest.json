@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "AI Shopping Assistant: Automatically Applies Coupon Codes on Ajio",
+  "version": "1.0",
+  "description": "Automatically Applies Promo Codes on  Ajio shopping website 😊",
+  "background": {
+    "service_worker": "background.bundle.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://www.ajio.com/*"],
+      "js": ["content.bundle.js"],
+        "run_at": "document_end"
+    }
+  ],
+  "permissions": [ 
+    "activeTab",
+    "storage",
+    "webNavigation",
+    "webRequest",
+    "scripting",
+    "background"
+  ],
+  "host_permissions": [
+    "https://www.ajio.com/*"
+  ]
+}

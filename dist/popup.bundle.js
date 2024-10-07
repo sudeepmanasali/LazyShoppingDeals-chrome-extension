@@ -1,0 +1,1 @@
+(()=>{"use strict";console.log("Popup script loaded");const e=document.querySelector("h1");e&&e.addEventListener("click",(()=>{alert("You clicked the popup!")}))})();

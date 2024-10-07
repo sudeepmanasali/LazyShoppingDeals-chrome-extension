@@ -1,0 +1,102 @@
+
+#LSD-coupon-modal-popup {
+  font-family: SourceSansPro;
+  position: fixed;
+  top: 15px;
+  right: 15px;
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  width: 450px;
+  border-radius: 5px;
+}
+
+.LSD-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+}
+.LSD-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #ad7200;
+  text-transform: capitalize;
+}
+
+.LSD-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding-top: 5px;
+}
+
+.LSD-coupons-number {
+  font-size: 24px;
+  line-height: 28px;
+  font-weight: 600;
+  color: #1D1D1B;
+  width: 100%;
+  text-wrap: wrap;
+}
+
+.LSD-description {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  margin-bottom: 10px;
+  color: #1D1D1B;
+}
+
+#LSD-modal-content {
+  background: #FFF1D5;
+  border-radius: 5px;
+  text-align: center;
+  position: relative;
+  padding: 16px 24px;
+}
+
+#LSD-close-modal {
+  background: #ad7200;
+  height: 30px;
+  width: 30px;
+  box-sizing: border-box;
+  cursor: pointer;
+  color: white;
+  font-size: 16px;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+#LSD-close-modal:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+  color: #1D1D1B;
+}
+
+button#LSD-apply-coupons {
+  border: none;
+  background: #FFC043;
+  padding: 10px 20px;
+  color: #1D1D1B;
+  cursor: pointer;
+  width: 100% !important;
+  border-radius: 5px;
+  margin: auto;
+  font-size: 14px;
+}
+
+.LSD-body-content {
+  width: 100%;
+  padding: 10px 0;
+  padding-bottom: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+}
