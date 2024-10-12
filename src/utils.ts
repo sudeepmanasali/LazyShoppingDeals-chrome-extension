@@ -138,13 +138,3 @@ export function storeSuccessfullyAppliedcoupon(couponData: any) {
     console.log(error)
   }
 }
-
-
-export function getLastUsedCoupon() {
-  try {
-    let couponData = JSON.parse(localStorage.getItem('LSDCoupon') || '')
-    console.log(couponData)
-  } catch (error) {
-
-  }
-}

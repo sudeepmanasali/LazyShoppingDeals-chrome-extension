@@ -1,12 +1,5 @@
 import $ from 'jquery';
 
-const popupElement = document.querySelector("h1");
-if (popupElement) {
-  popupElement.addEventListener("click", () => {
-    alert("You clicked the popup!");
-  });
-}
-
 chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
   if (tabs[0] && tabs[0].url && tabs[0].url.includes("cart")) {
     $('#retry-coupon-button').show();
@@ -26,7 +19,7 @@ chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         const succssfullyAppliedCoupon: string | null = result[0].result;
         if (succssfullyAppliedCoupon) {
           $('#LSD-container-header').show();
-          $('#last-used-coupon').empty().append(createCouponCard(JSON.parse(succssfullyAppliedCoupon)))
+          $('#last-used-coupon').empty().append(createCouponCard(JSON.parse(succssfullyAppliedCoupon)));
         } else {
           $('#LSD-container-header').hide();
           $('#last-used-coupon').hide();
@@ -36,36 +29,39 @@ chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
   }
 });
 
+// To get the local storage key value pairs
 function readLocalStorageKey(): string | null {
   const key = 'LSDCoupon';
   return localStorage.getItem(key);
 }
 
 const coupons = [
-  { couponKey: "SAVE10", discountApplied: 300 },
-  { couponKey: "SAVE20", discountApplied: 500 },
-  { couponKey: "SAVE50", discountApplied: 1000 }
+  { couponCode: "SAVE10", discoutPrice: 300 },
+  { couponCode: "SAVE20", discoutPrice: 500 },
+  { couponCode: "SAVE50", discoutPrice: 1000 }
 ];
 
-function createCouponElement(coupons: any[]) {
+function RenderCouponCards(coupons: any[]) {
   $('#coupon-container').empty();
   coupons.forEach((coupon) => {
     const couponCodeElement = createCouponCard(coupon);
     $('#coupon-container').append(couponCodeElement);
   });
+
+  $('#coupons-count').text(coupons.length);
 }
 
-function createCouponCard(coupon: { couponKey: any; discountApplied: any; }) {
+function createCouponCard(coupon: { couponCode: any; discoutPrice: any; }) {
   let couponDataHtml = `
   <div class="LSD-coupon-icon-box"> 
     <i class="fa fa-tags" aria-hidden="true"></i>
   </div>
   <div class="LSD-coupon-info-box">
-    <div class="LSD-coupon-title">${coupon.couponKey}</div>
-    <div class="LSD-coupon-when-used">You will be saving Rs.${coupon.discountApplied}</div>
+    <div class="LSD-coupon-title">${coupon.couponCode}</div>
+    <div class="LSD-coupon-when-used">You will be saving Rs. ${coupon.discoutPrice}</div>
   </div>`
 
   return $('<div>', { class: 'LSD-pop-up-coupon-card' }).html(couponDataHtml);
 }
 
-createCouponElement(coupons);
+RenderCouponCards(coupons);
