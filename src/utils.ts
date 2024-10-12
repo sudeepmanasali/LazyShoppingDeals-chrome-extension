@@ -2,9 +2,9 @@ export const couponCodes = [
   'DISCOUNT10',
   'NEW3003',
   'NEW300',
-  'FREESHIPO',
+  'FREEDEL',
   'NEW100',
-  'FREESHIPL',
+  'FREESHIP',
   'FREESHIP3'
 ];
 
@@ -21,9 +21,8 @@ export function findCouponInput(): Element | null {
       if (element) return element;
     }
   } catch (error) {
-    console.log(error);
+    console.error('Coupon input element not found.', error);
   }
-  console.error('Coupon input element not found.');
   return null;
 }
 
@@ -38,9 +37,8 @@ export function findApplyButton(): Element | null {
       if (element) return element;
     }
   } catch (error) {
-    console.log(error);
+    console.error('Apply button not found.', error);
   }
-  console.error('Apply button not found.');
   return null;
 }
 
@@ -86,30 +84,10 @@ export function clearCoupon(): void {
 }
 
 
-export function fetchCouponsData(): void {
-  let priceElement: HTMLElement | null = document.querySelector("#orderTotal .price-value");
-  let price;
-  if (priceElement) {
-    price = priceElement.textContent?.slice(1) || '';
-
-    const numericValue = parseFloat(price.split(',').join(''));
-
-    fetch(`http://localhost:8080/coupons?price=${numericValue}`)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        console.log(data);
-      })
-      .catch((error) => {
-        console.log('Fetch error:', error);
-      });
-  }
-
+export function fetchCouponsData(price: number): Promise<any> {
+  return fetch(`http://localhost:8080/coupons?price=${price}`)
 }
+
 
 // Function to wait for elements to become available
 export async function waitForElements() {
@@ -135,4 +113,38 @@ export function getElementByIdSafe(id: string): HTMLElement | null {
     console.warn(`Element with id "${id}" not found.`);
   }
   return element;
+}
+
+
+
+export function getPriceValue(amountString: String): number {
+  try {
+    let [price] = amountString.match(/[\d,]+(\.\d+)?/) || ['0'];
+
+    if (price) {
+      return parseFloat(price.replace(/,/g, ''))
+    }
+  } catch (error) {
+    console.log(error)
+  }
+  return 0;
+}
+
+
+export function storeSuccessfullyAppliedcoupon(couponData: any) {
+  try {
+    localStorage.setItem('LSDCoupon', JSON.stringify(couponData));
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+
+export function getLastUsedCoupon() {
+  try {
+    let couponData = JSON.parse(localStorage.getItem('LSDCoupon') || '')
+    console.log(couponData)
+  } catch (error) {
+
+  }
 }

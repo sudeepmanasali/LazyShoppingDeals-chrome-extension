@@ -22,15 +22,15 @@
   background: #FFF1D5;
   padding: 16px 24px;
   border-radius: 10px;
-  border-bottom-left-radius: 0px;
-  border-bottom-right-radius: 0px;
   display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
+  box-sizing: border-box;
+  padding-bottom: 0;
 }
 
-.LSD-coupon-summary{
+.LSD-coupon-summary {
   border-radius: 10px;
   padding: 0;
 }
@@ -121,18 +121,23 @@
 .LSD-progress-container {
   width: 800px;
   height: 10px;
-  border: 1px solid #ccc;
   border-radius: 10px;
-  background-color: #f0f0f0;
+  background: #FFF1D5;
   position: relative;
   bottom: 0px;
+  border-bottom-left-radius: 100px;
+  border-bottom-right-radius: 100px;
+  margin-top: 20px;
 }
 
 .LSD-progress-bar {
   height: 100%;
-  background-color: #ad7200;;
+  background-color: #d5a249;
   width: 0%;
   transition: width 0.3s ease-in-out;
+  border-bottom-left-radius: 100px;
+  border-top-right-radius: 100px;
+  border-bottom-right-radius: 100px;
 }
 
 .LSD-message {

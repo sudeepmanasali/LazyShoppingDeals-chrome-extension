@@ -1,4 +1,5 @@
-import { findCouponInput, findApplyButton, waitForElements, couponCodes, findDiscountElement, getElementByIdSafe } from "./utils";
+import $ from 'jquery';
+import { findCouponInput, getPriceValue, findApplyButton, waitForElements, couponCodes, findDiscountElement, getElementByIdSafe, storeSuccessfullyAppliedcoupon } from "./utils";
 import { clearCoupon } from "./utils";
 import './autoApplyCouponsModal.css';
 
@@ -9,7 +10,7 @@ let currentBoxIndex = 0;
 async function findBestCoupon(couponCodes: string[]) {
   let bestCoupon = null;
   let maxDiscount = 0;
-  let currentCoupon = 1;
+  let currentCoupon = 0;
 
   try {
     for (const couponCode of couponCodes) {
@@ -19,8 +20,8 @@ async function findBestCoupon(couponCodes: string[]) {
       try {
         scrollToRight(couponCode);
         addSpinner(box);
-        updateProgress((currentCoupon / couponCodes.length) * 100);
-        const discount = await applyCouponAndGetDiscount(couponCode);;
+        const discount = await applyCouponAndGetDiscount(couponCode);
+        console.log('>>>>>>> : ', discount);
         if (discount > maxDiscount) {
           maxDiscount = discount;
           bestCoupon = couponCode;
@@ -31,6 +32,7 @@ async function findBestCoupon(couponCodes: string[]) {
         successFullCoupon = false;
       } finally {
         removeSpinner(box, successFullCoupon);
+        updateProgress((currentCoupon / couponCodes.length) * 100);
       }
     }
 
@@ -86,49 +88,54 @@ async function createBoxes() {
 
 
 // Processing a coupons in the modal
-export function ApplyCouponsAndFindBestOfIt(totalCartAmt: string) {
+export function ApplyCouponsAndFindBestOfIt(totalCartAmt: number) {
   const modalHTML = `
       <div id="LSD-coupon-processing-container">
         <div id="LSD-views">
           <div class="LSD-center-the-contents">
             <div class="LSD-coupon-processing" id="LSD-coupon-processing-view">
-                <div class="LSD-header">
-                  <div class="LSD-title">
-                    <h2>lazyShopDeals.com</h2>
-                  </div>
-                  <div id="LSD-close-modal"><i class="fa-solid fa-xmark"></i></div>
+              <div class="LSD-header">
+                <div class="LSD-title">
+                  <h2>lazyShopDeals.com</h2>
                 </div>
-                <div class="LSD-coupon-cards-container">
-                  <p class="LSD-message"> Processing ${couponCodes.length} great coupons</p>
-                  <div class="coupon-code-scanner">
-                      <div class="barcode"><i class="fa-solid fa-barcode"></i></div>
-                      <div class="barcode-line scanning"></div>
-                  </div>
-                  <div class="LSD-container" id="LSD-scrollable-container">
-                  </div>
+                <div id="LSD-close-modal-X"><i class="fa-solid fa-xmark"></i></div>
+              </div>
+              <div class="LSD-coupon-cards-container">
+                <p class="LSD-message"> Processing ${couponCodes.length} great coupons</p>
+                <div class="coupon-code-scanner">
+                    <div class="barcode"><i class="fa-solid fa-barcode"></i></div>
+                    <div class="barcode-line scanning"></div>
                 </div>
-            </div>
+                <div class="LSD-container" id="LSD-scrollable-container">
+                </div>
+              </div>
 
-            <div class="LSD-coupon-summary" id="LSD-coupon-summary-view" style="display:none;">
-            
+              <div class="LSD-progress-container" id="LSD-progress-indicator">
+                <div id="LSD-progress-bar" class="LSD-progress-bar"></div>
+              </div>
             </div>
-            <div class="LSD-progress-container" id="LSD-progress-indicator">
-              <div id="LSD-progress-bar" class="LSD-progress-bar"></div>
-            </div>
+            <div class="LSD-coupon-summary" id="LSD-coupon-summary-view" style="display:none;"> </div>
           </div>
         </div>
       </div>`;
 
-  const modalContainer = document.createElement('div');
-  modalContainer.innerHTML = modalHTML;
-  document.body.appendChild(modalContainer);
+  const modalContainer = $(modalHTML);
+  $('body').append(modalContainer);
+
   createBoxes();
 
-  const closeModal = document.getElementById('LSD-close-modal');
+  const closeModal = $('#LSD-close-modal-X');
 
   function onModalAdded() {
     findBestCoupon(couponCodes).then((response) => {
-      console.log(response);
+      if (response.maxDiscount === 0) {
+        clearCoupon();
+      } else {
+        storeSuccessfullyAppliedcoupon({
+          couponCode: response.bestCoupon,
+          discountPrice: response.maxDiscount
+        });
+      }
       displayTheSummary(response.maxDiscount, response.bestCoupon);
     }).catch(error => {
       console.log(error);
@@ -137,69 +144,36 @@ export function ApplyCouponsAndFindBestOfIt(totalCartAmt: string) {
 
   onModalAdded();
 
-
   function displayTheSummary(discoutAmt: number, bestCoupon: string | null) {
-    const total_order = document.getElementById('couponDiscount')?.querySelector('.discount-price')?.textContent ?? '0';
-    let savingsValueElement = document.getElementById('LSD-savings-value');
-    let progressIndicator = document.getElementById('LSD-progress-indicator');
-    let couponModalBoxElement = document.getElementById('LSD-coupon-processing-view');
-    let content = document.getElementById('LSD-coupon-summary-view');
-    let cartPriceValueElement = document.getElementById('LSD-cart-price-value');
-    let cartTotal = document.getElementById('orderTotal')?.getElementsByClassName('price-value')[0].textContent ?? '0';
+    const couponModalBoxElement = $('#LSD-coupon-processing-view');
+    const content = $('#LSD-coupon-summary-view');
+    const cartTotal = $('#orderTotal .price-value').text() || '0';
 
-
-    let SummaryComponent = createCouponSummaryElement(cartTotal, totalCartAmt, discoutAmt, bestCoupon, bestCoupon !== null);
-
-    if (savingsValueElement) {
-      savingsValueElement.textContent = `${total_order}!`
-    }
-
-    if (cartPriceValueElement) {
-      cartPriceValueElement.textContent = `${cartTotal}!`
-    }
-
-    if (progressIndicator) {
-      progressIndicator.remove();
-    }
-
-    if (couponModalBoxElement) {
-      couponModalBoxElement.style.display = 'none';
-    }
+    let SummaryComponent = createCouponSummaryElement(cartTotal, totalCartAmt, discoutAmt, bestCoupon, bestCoupon !== null, closeTheModal);
+    couponModalBoxElement.hide();
 
     if (content) {
-      const e = document.createElement('div');
-      e.style.height = '100%';
-      e.style.width = '100%';
+      const e = $('<div></div>').css({
+        height: '100%',
+        width: '100%'
+      });
 
-      e.innerHTML = SummaryComponent;
-      content.appendChild(e);
-      content.style.display = 'block';
+      e.html(SummaryComponent);
+      content.append(e);
+      content.show();
     }
   }
 
   const closeTheModal = () => {
     stopFlag = true;
-    document.getElementById('LSD-coupon-processing-container')?.remove();
-    const styleToRemove = document.getElementById('my-custom-style');
-    if (styleToRemove) {
-      document.head.removeChild(styleToRemove);
-    }
-
-    const fontAwesomeRemove = document.getElementById('LSD-my-custom-font-awesome-icons');
-    if (fontAwesomeRemove) {
-      document.head.removeChild(fontAwesomeRemove);
-    }
+    $('#LSD-coupon-processing-container').remove();
+    $('#my-custom-style').remove();
+    $('#LSD-my-custom-font-awesome-icons').remove();
   }
 
-  closeModal?.addEventListener('click', async () => {
-    closeTheModal();
-  });
+  closeModal.on('click', closeTheModal);
 
-  let couponModalBoxElement = document.getElementById('LSD-coupon-processing-container');
-
-  if (couponModalBoxElement) {
-    couponModalBoxElement.style.display = 'block';
-  }
+  $('#LSD-coupon-processing-container').fadeIn();
 }
 
 // Function to apply a coupon and get the discount amount
@@ -235,8 +209,7 @@ async function applyCouponAndGetDiscount(couponCode: string) {
 
       const discountElement = findDiscountElement();
       const discountText = discountElement ? discountElement.textContent || '' : '0';
-      const discount = parseFloat(discountText.replace(/[^\d.]/g, ''));
-      return discount;
+      return getPriceValue(discountText);
     } catch (error) {
       console.log(error)
     }
@@ -246,13 +219,13 @@ async function applyCouponAndGetDiscount(couponCode: string) {
 
 function updateProgress(percentage: number) {
   try {
-    progress += percentage;
+    progress = percentage;
 
     if (progress > 100) {
       progress = 100;
     }
 
-    const progressBar = document.getElementById('LSD-progress-bar');
+    const progressBar = $('#LSD-progress-bar').get(0);
     if (progressBar) {
       progressBar.style.width = progress + '%';
     }
@@ -285,29 +258,28 @@ function scrollToRight(elementId: string) {
 }
 
 
-async function addSpinner(box: HTMLElement) {
+async function addSpinner(couponCodeBoxElement: HTMLElement) {
   try {
-    await waitForElementse(box)
-    const icon = document.createElement('i');
-    icon.className = 'fa-solid fa-spinner LSD-loading-icon';
-    box.appendChild(icon);
-    box.classList.add('LSD-current-coupon-code-processing');
-    console.log('inside spinner ', box)
-
+    await waitForElementse(couponCodeBoxElement);
+    const couponCodeBox = $(couponCodeBoxElement);
+    const spinnerIcon = $('<i></i>').addClass('fa-solid fa-spinner LSD-loading-icon');
+    couponCodeBox.append(spinnerIcon);
+    couponCodeBox.addClass('LSD-current-coupon-code-processing');
+    console.log('inside spinner ', couponCodeBox[0]);
   } catch (error) {
     console.log(error);
   }
 }
 
-function removeSpinner(box: HTMLElement, successFullCoupon: boolean) {
+function removeSpinner(CouponCodeBoxElement: HTMLElement, successFullCoupon: boolean) {
   try {
-    console.log('inside removeSpinner: ', box)
-    box.classList.remove('LSD-current-coupon-code-processing');
-    box.classList.add(successFullCoupon ? 'LSD-success-coupon' : 'LSD-failed-coupon');
-    let spinnerElement = box.querySelector(".fa-spinner");
+    const couponCodeBox = $(CouponCodeBoxElement);
+    couponCodeBox.removeClass('LSD-current-coupon-code-processing');
+    couponCodeBox.addClass(successFullCoupon ? 'LSD-success-coupon' : 'LSD-failed-coupon');
 
+    const spinnerElement = couponCodeBox.find('.fa-spinner').get(0);
     if (spinnerElement) {
-      box.removeChild(spinnerElement);
+      spinnerElement.remove();
     }
 
   } catch (error) {
@@ -335,8 +307,8 @@ async function waitForElementse(func: any) {
 
 function getContainerElement(): Element | null {
   try {
-    const element = document.getElementById('LSD-scrollable-container');
-    return element;
+    const container = $('#LSD-scrollable-container');
+    return container[0] || null;
   } catch (error) {
     console.log(error);
   }
@@ -348,27 +320,11 @@ function createCouponSummaryElement(
   originalPrice: string | number,
   savingsAmount: number | number,
   couponCode: string | null,
-  isCouponApplied: boolean
+  isCouponApplied: boolean,
+  closeModal: any
 ) {
 
-
-  let closeModal = () => {
-    console.log('called  here')
-    stopFlag = true;
-    document.getElementById('LSD-coupon-processing-container')?.remove();
-    const styleToRemove = document.getElementById('my-custom-style');
-    if (styleToRemove) {
-      document.head.removeChild(styleToRemove);
-    }
-
-    const fontAwesomeRemove = document.getElementById('LSD-my-custom-font-awesome-icons');
-    if (fontAwesomeRemove) {
-      document.head.removeChild(fontAwesomeRemove);
-    }
-
-  }
-
-  return `<div class="LSD-split-container">
+  let html = `<div class="LSD-split-container">
                 <div class="${isCouponApplied ? 'LSD-left-box' : 'LSD-left-box failed-to-apply-coupon'}">
                   <div class="LSD-savings-title">
                        ${isCouponApplied ? "You're Saving" : 'You have the best price we found!'}
@@ -397,7 +353,11 @@ function createCouponSummaryElement(
                       </div>
                     </div>
                   </div>
-                  <button id="LSD-close-modal2" class='LSD-continue-button' onclick="${() => closeModal()}">Continue Shopping</button>
+                  <button class='LSD-continue-button' id="LSD-continue-button">Continue Shopping</button>
                 </div>
               </div>`;
+
+  $(document).on('click', '#LSD-continue-button', closeModal);
+
+  return html;
 }

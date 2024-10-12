@@ -57,9 +57,11 @@
   text-align: center;
   position: relative;
   padding: 16px 24px;
+  width: 100%;
 }
 
-#LSD-close-modal {
+#LSD-close-modal,
+#LSD-close-modal-X {
   background: #ad7200;
   height: 30px;
   width: 30px;
@@ -99,4 +101,10 @@ button#LSD-apply-coupons {
   flex-direction: row;
   align-items: flex-start;
   justify-content: space-between;
+}
+
+.LSD-animated-image {
+  height: 105px;
+  width: 151px;
+  border-radius: 100px;
 }

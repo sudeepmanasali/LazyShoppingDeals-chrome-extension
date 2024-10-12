@@ -14,6 +14,9 @@ module.exports = {
   },
   resolve: {
     extensions: ['.ts', '.js'],
+    alias: {
+      jquery: 'jquery'
+    }
   },
   module: {
     rules: [
@@ -35,7 +38,8 @@ module.exports = {
   plugins: [
     new CopyPlugin({
       patterns: [
-        { from: 'public/manifest.json', to: 'manifest.json' }
+        { from: 'public/manifest.json', to: 'manifest.json' },
+        { from: 'public/popup.css', to: 'popup.css' },
       ],
     }),
     new HtmlWebpackPlugin({
