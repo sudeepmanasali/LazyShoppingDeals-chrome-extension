@@ -8,18 +8,34 @@ export const couponCodes = [
   'FREESHIP3'
 ];
 
+export const enum LOCAL_STORAGE_KEYS {
+  COUPON_CODE_INPUT_SELECTOR = 'couponCodeInputSelector',
+  COUPON_APPLY_BUTTON_SELECTOR = 'couponApplyButtonSelector',
+  LSD_COUPON = 'LSDCoupon'
+}
 
-// Helper functions to find elements
+
+export const APPLY_BUTTON_ELEMENT_SELECTORS = [
+  'button',
+  'input[type="button"]',
+  'input[type="submit"]'
+];
+
+export const COUPON_CODE_INPUT_ELEMENT_SELECTORS = [
+  'input[type="text"]',
+  'textarea'
+];
+
+export const APPLY_BUTTON_ELEMENT_TEXT_CONTENT = ["apply", "coupon"];
+export const COUPON_CODE_INPUT_ELEMENT_TEXT_CONTENT = ["coupon", "promo", "voucher", "discount"];
+
+
 export function findCouponInput(): Element | null {
-  const selectors = [
-    'input[id="couponCodeInput"]'
-  ];
+  const elementSelector = localStorage.getItem(LOCAL_STORAGE_KEYS.COUPON_CODE_INPUT_SELECTOR) || '';
+  const htmlElement = document.querySelector(elementSelector);
 
   try {
-    for (let selector of selectors) {
-      const element = document.querySelector(selector);
-      if (element) return element;
-    }
+    if (htmlElement) return htmlElement;
   } catch (error) {
     console.error('Coupon input element not found.', error);
   }
@@ -27,17 +43,13 @@ export function findCouponInput(): Element | null {
 }
 
 export function findApplyButton(): Element | null {
-  const selectors = [
-    'button[class*="apply"]'
-  ];
+  const elementSelector = localStorage.getItem(LOCAL_STORAGE_KEYS.COUPON_APPLY_BUTTON_SELECTOR) || '';
+  const htmlElement = document.querySelector(elementSelector);
 
   try {
-    for (let selector of selectors) {
-      const element = document.querySelector(selector);
-      if (element) return element;
-    }
+    if (htmlElement) return htmlElement;
   } catch (error) {
-    console.error('Apply button not found.', error);
+    console.error('Coupon input element not found.', error);
   }
   return null;
 }
@@ -59,7 +71,6 @@ export function findDiscountElement(): Element | null {
   return null;
 }
 
-// Function to clear the coupon input field
 export function clearCoupon(): void {
   const selectors = [
     'span[class*="delete"]'
@@ -107,16 +118,6 @@ export async function waitForElements() {
 }
 
 
-export function getElementByIdSafe(id: string): HTMLElement | null {
-  const element = document.getElementById(id);
-  if (!element) {
-    console.warn(`Element with id "${id}" not found.`);
-  }
-  return element;
-}
-
-
-
 export function getPriceValue(amountString: String): number {
   try {
     let [price] = amountString.match(/[\d,]+(\.\d+)?/) || ['0'];
@@ -133,8 +134,50 @@ export function getPriceValue(amountString: String): number {
 
 export function storeSuccessfullyAppliedcoupon(couponData: any) {
   try {
-    localStorage.setItem('LSDCoupon', JSON.stringify(couponData));
+    localStorage.setItem(LOCAL_STORAGE_KEYS.LSD_COUPON, JSON.stringify(couponData));
   } catch (error) {
     console.log(error)
   }
+}
+
+export function findHtmlElements(selectors: string[], searchText: string[]): string {
+  try {
+    for (let selector of selectors) {
+      const elements = document.querySelectorAll(selector);
+      for (let element of elements) {
+        const elementText = element.textContent?.trim().toLowerCase();
+        const placeholder = (element as HTMLInputElement).placeholder?.trim().toLowerCase();
+        const id = element.id.trim().toLowerCase();
+        const classList = element.className.trim().toLowerCase();
+
+        if (searchText.some(text => elementText?.includes(text) || placeholder?.includes(text))) {
+
+
+          let elementSelector = '';
+
+          if (id) {
+            elementSelector = `#${element.id.trim()}`;
+          }
+
+          if (!id && classList) {
+            elementSelector = `.${element.className.trim().split(/\s+/).join('.')}`;
+          }
+
+          if (!id && !classList && placeholder) {
+            elementSelector = `[placeholder="${(element as HTMLInputElement).placeholder?.trim()}"]`;
+          }
+
+          if (!elementSelector) {
+            elementSelector = `${selector}[text="${element.textContent?.trim()}"]`;
+          }
+
+          return elementSelector;
+        }
+      }
+    }
+  } catch (error) {
+    console.log('Element not found...!', error);
+  }
+
+  return '';
 }

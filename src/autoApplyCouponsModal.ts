@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import { findCouponInput, getPriceValue, findApplyButton, waitForElements, couponCodes, findDiscountElement, getElementByIdSafe, storeSuccessfullyAppliedcoupon } from "./utils";
+import { findCouponInput, getPriceValue, findApplyButton, waitForElements, couponCodes, findDiscountElement, storeSuccessfullyAppliedcoupon } from "./utils";
 import { clearCoupon } from "./utils";
 import './autoApplyCouponsModal.css';
 
@@ -21,7 +21,6 @@ async function findBestCoupon(couponCodes: string[]) {
         scrollToRight(couponCode);
         addSpinner(box);
         const discount = await applyCouponAndGetDiscount(couponCode);
-        console.log('>>>>>>> : ', discount);
         if (discount > maxDiscount) {
           maxDiscount = discount;
           bestCoupon = couponCode;
@@ -202,7 +201,7 @@ async function applyCouponAndGetDiscount(couponCode: string) {
           bubbles: true
         }));
 
-        applyButton?.click();
+        applyButton.click();
       }
 
       await new Promise(resolve => setTimeout(resolve, 1000));
